@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33110.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plane3DOpenGLScene", "Plane3DOpenGLScene\Plane3DOpenGLScene.csproj", "{E84A8269-2FC0-46FD-BB91-BF0B2C15C51D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileParserLib", "FileParserLib\FileParserLib.csproj", "{4196A316-A221-452F-8CDD-A92AC2CD48D4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenGLHelperClassLib", "CommonClassLib\OpenGLHelperClassLib.csproj", "{80C06024-646F-4BA5-8DE2-95FE532A6ADC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestLib", "TestLib\TestLib.csproj", "{618B4A9B-1AD6-4E67-8B08-6A80DFEE456D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovementOrchestratorLib", "MovementOrchestratorLib\MovementOrchestratorLib.csproj", "{215E0CC9-8F77-405D-99AA-10661806865D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SceneObjectLib", "SceneObjectLib\SceneObjectLib.csproj", "{BA637B88-3463-4E19-A36D-C38C9DB9FAD8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E84A8269-2FC0-46FD-BB91-BF0B2C15C51D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E84A8269-2FC0-46FD-BB91-BF0B2C15C51D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E84A8269-2FC0-46FD-BB91-BF0B2C15C51D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E84A8269-2FC0-46FD-BB91-BF0B2C15C51D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4196A316-A221-452F-8CDD-A92AC2CD48D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4196A316-A221-452F-8CDD-A92AC2CD48D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4196A316-A221-452F-8CDD-A92AC2CD48D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4196A316-A221-452F-8CDD-A92AC2CD48D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80C06024-646F-4BA5-8DE2-95FE532A6ADC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80C06024-646F-4BA5-8DE2-95FE532A6ADC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80C06024-646F-4BA5-8DE2-95FE532A6ADC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80C06024-646F-4BA5-8DE2-95FE532A6ADC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{618B4A9B-1AD6-4E67-8B08-6A80DFEE456D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{618B4A9B-1AD6-4E67-8B08-6A80DFEE456D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{618B4A9B-1AD6-4E67-8B08-6A80DFEE456D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{618B4A9B-1AD6-4E67-8B08-6A80DFEE456D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{215E0CC9-8F77-405D-99AA-10661806865D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{215E0CC9-8F77-405D-99AA-10661806865D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{215E0CC9-8F77-405D-99AA-10661806865D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{215E0CC9-8F77-405D-99AA-10661806865D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA637B88-3463-4E19-A36D-C38C9DB9FAD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA637B88-3463-4E19-A36D-C38C9DB9FAD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA637B88-3463-4E19-A36D-C38C9DB9FAD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA637B88-3463-4E19-A36D-C38C9DB9FAD8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {05221A3C-61DC-474D-8609-A6A7F8F6098F}
+	EndGlobalSection
+EndGlobal
