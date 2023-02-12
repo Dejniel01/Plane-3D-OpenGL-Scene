@@ -10,6 +10,8 @@ struct PointLight {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+
+    int visible;
 };
 
 #define NR_POINT_LIGHTS 2
@@ -59,12 +61,23 @@ void main()
     for(int i = 1; i < NR_SPOT_LIGHTS; i++)
         result += CalcSpotLight(spotLights[i], norm, FragPos, viewDir);    
 
+    float fogMax = 50;
+    float fogMin = 30;
+    float fogDistance = length(FragPos - viewPos);
+    float fogFactor = ( fogMax - fogDistance ) / ( fogMax - fogMin );
+    fogFactor = clamp ( fogFactor, 0.0, 1.0 );
+
+    result *= fogFactor;
+
     FragColor = vec4(result, 1.0);
 }
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
-    vec3 lightDir = normalize(light.position - fragPos);\
+    if(light.visible == 0)
+        return vec3(0.0);
+
+    vec3 lightDir = normalize(light.position - fragPos);
 
     //diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);

@@ -35,6 +35,13 @@ namespace Plane3DOpenGLScene.Structures
             return CreateModelFromFile(ringObj);
         }
 
+        public static SceneObject CreateOceanObject() 
+        {
+            string oceanObj = "./../../../../../Assets/ocean_cube.obj";
+
+            return CreateModelFromFile(oceanObj);
+        }
+
         public static SceneObject CreateTestObject()
         {
             string testObj = "./../../../../../Assets/simple/cube.obj";

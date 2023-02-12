@@ -51,6 +51,16 @@ namespace Plane3D.Plane3DOpenGLScene
 
         private Shader ringShader;
 
+        private readonly SceneObject ocean;
+
+        private int oceanVertexBufferObject;
+
+        private int oceanVertexArrayObject;
+
+        private Shader oceanShader;
+
+        private Texture oceanTexture;
+
         // The view and projection matrices have been removed as we don't need them here anymore.
         // They can now be found in the new camera class.
 
@@ -123,6 +133,9 @@ namespace Plane3D.Plane3DOpenGLScene
 
         private PlaneMovementOrchestrator planeMovementOrchestrator = new PlaneMovementOrchestrator();
 
+        private bool isSunVisible = true;
+        private bool isMoonVisible = false;
+
         //private double time;
         public Window(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
             : base(gameWindowSettings, nativeWindowSettings)
@@ -177,6 +190,9 @@ namespace Plane3D.Plane3DOpenGLScene
                 rings[i].Position = ringPos[i];
                 rings[i].Rotation = ringRotations[i];
             }
+
+            ocean = SceneObjectFactory.CreateOceanObject();
+            ocean.Position = new Vector3(0, -10, 0);
         }
 
         protected override void OnLoad()
@@ -194,6 +210,8 @@ namespace Plane3D.Plane3DOpenGLScene
             SetupMainLights();
 
             SetupRings();
+
+            SetupOcean();
 
             // We initialize the camera so that it is 3 units back from where the rectangle is.
             // We also give it the proper aspect ratio.
@@ -231,6 +249,36 @@ namespace Plane3D.Plane3DOpenGLScene
             planeTexture.Use(TextureUnit.Texture0);
 
             planeShader.SetInt("texture0", 0);
+        }
+
+        private void SetupOcean()
+        {
+            oceanVertexArrayObject = GL.GenVertexArray();
+            GL.BindVertexArray(oceanVertexArrayObject);
+
+            oceanVertexBufferObject = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, oceanVertexBufferObject);
+            GL.BufferData(BufferTarget.ArrayBuffer, ocean.Model.Vertices.Length * sizeof(float), ocean.Model.Vertices, BufferUsageHint.StaticDraw);
+
+            oceanShader = new Shader("Shaders/TextureShader/shader.vert", "Shaders/TextureShader/shader.frag");
+            oceanShader.Use();
+
+            var oceanVertexLocation = oceanShader.GetAttribLocation("aPosition");
+            GL.EnableVertexAttribArray(oceanVertexLocation);
+            GL.VertexAttribPointer(oceanVertexLocation, 3, VertexAttribPointerType.Float, false, ocean.Model.Stride * sizeof(float), 0);
+
+            var oceanNormalLocation = oceanShader.GetAttribLocation("aNormal");
+            GL.EnableVertexAttribArray(oceanNormalLocation);
+            GL.VertexAttribPointer(oceanNormalLocation, 3, VertexAttribPointerType.Float, false, ocean.Model.Stride * sizeof(float), 3 * sizeof(float));
+
+            var oceanTexCoordLocation = oceanShader.GetAttribLocation("aTexCoord");
+            GL.EnableVertexAttribArray(oceanTexCoordLocation);
+            GL.VertexAttribPointer(oceanTexCoordLocation, 2, VertexAttribPointerType.Float, false, ocean.Model.Stride * sizeof(float), 6 * sizeof(float));
+
+            oceanTexture = Texture.LoadFromFile("Resources/ocean.png");
+            oceanTexture.Use(TextureUnit.Texture0);
+
+            oceanShader.SetInt("texture0", 0);
         }
 
         private void SetupClouds()
@@ -306,9 +354,22 @@ namespace Plane3D.Plane3DOpenGLScene
 
             DrawRings();
 
+            DrawOcean();
+
+            isSunVisible = new Vector3(new Vector4(mainLights[0].Position, 1) * Matrix4.CreateRotationZ(angle / 10)).Y >= ocean.Position.Y;
+            isMoonVisible = new Vector3(new Vector4(mainLights[1].Position, 1) * Matrix4.CreateRotationZ(angle / 10)).Y >= ocean.Position.Y;
+
+            if (isSunVisible && isMoonVisible)
+                GL.ClearColor(0.2078f, 0.298f, 0.5255f, 1.0f);
+            else if (isSunVisible)
+                GL.ClearColor(0.5294f, 0.7961f, 0.8706f, 1.0f);
+            else if (isMoonVisible)
+                GL.ClearColor(0.03529f, 0.04705f, 0.2431f, 1.0f);
+
             angle += (float)e.Time;
 
             planeMovementOrchestrator.UpdatePosition(plane, ref planeDirection, (float)e.Time);
+
 
             SwapBuffers();
         }
@@ -321,7 +382,7 @@ namespace Plane3D.Plane3DOpenGLScene
             planeShader.Use();
 
             planeShader.SetVector3("lightColor", new Vector3(1.0f, 1.0f, 1.0f));
-            planeShader.SetVector3("lightPos", new Vector3(new Vector4(mainLights[0].Position, 1) * Matrix4.CreateRotationZ(angle)));
+            planeShader.SetVector3("lightPos", new Vector3(new Vector4(mainLights[0].Position, 1) * Matrix4.CreateRotationZ(angle / 10)));
             planeShader.SetVector3("viewPos", camera.Position);
 
             planeShader.SetMatrix4("model", plane.ModelMatrix);
@@ -330,6 +391,25 @@ namespace Plane3D.Plane3DOpenGLScene
             planeShader.SetMatrix4("transposedInversedModel", Matrix4.Transpose(Matrix4.Invert(plane.ModelMatrix)));
 
             GL.DrawArrays(PrimitiveType.Triangles, 0, plane.Model.Vertices.Length / plane.Model.Stride);
+        }
+
+        private void DrawOcean()
+        {
+            GL.BindVertexArray(oceanVertexArrayObject);
+
+            oceanTexture.Use(TextureUnit.Texture0);
+            oceanShader.Use();
+
+            oceanShader.SetVector3("lightColor", new Vector3(1.0f, 1.0f, 1.0f));
+            oceanShader.SetVector3("lightPos", new Vector3(new Vector4(mainLights[0].Position, 1) * Matrix4.CreateRotationZ(angle / 10)));
+            oceanShader.SetVector3("viewPos", camera.Position);
+
+            oceanShader.SetMatrix4("model", ocean.ModelMatrix);
+            oceanShader.SetMatrix4("view", camera.GetViewMatrix());
+            oceanShader.SetMatrix4("projection", camera.GetProjectionMatrix());
+            oceanShader.SetMatrix4("transposedInversedModel", Matrix4.Transpose(Matrix4.Invert(ocean.ModelMatrix)));
+
+            GL.DrawArrays(PrimitiveType.Triangles, 0, ocean.Model.Vertices.Length / ocean.Model.Stride);
         }
 
         private void DrawClouds()
@@ -355,21 +435,23 @@ namespace Plane3D.Plane3DOpenGLScene
             shader.SetVector3("viewPos", camera.Position);
 
             // Point lights
-            shader.SetVector3($"pointLights[{0}].position", new Vector3(new Vector4(mainLights[0].Position, 1) * Matrix4.CreateRotationZ(angle)));
+            shader.SetVector3($"pointLights[{0}].position", new Vector3(new Vector4(mainLights[0].Position, 1) * Matrix4.CreateRotationZ(angle / 10)));
             shader.SetVector3($"pointLights[{0}].ambient", new Vector3(0.05f, 0.05f, 0.05f));
             shader.SetVector3($"pointLights[{0}].diffuse", new Vector3(0.8f, 0.8f, 0.8f));
             shader.SetVector3($"pointLights[{0}].specular", new Vector3(1.0f, 1.0f, 1.0f));
             shader.SetFloat($"pointLights[{0}].constant", 1.0f);
             shader.SetFloat($"pointLights[{0}].linear", 0.0014f);
             shader.SetFloat($"pointLights[{0}].quadratic", 0.000007f);
+            shader.SetInt($"pointLights[{0}].visible", isSunVisible ? 1 : 0);
 
-            shader.SetVector3($"pointLights[{1}].position", new Vector3(new Vector4(mainLights[1].Position, 1) * Matrix4.CreateRotationZ(angle)));
+            shader.SetVector3($"pointLights[{1}].position", new Vector3(new Vector4(mainLights[1].Position, 1) * Matrix4.CreateRotationZ(angle / 10)));
             shader.SetVector3($"pointLights[{1}].ambient", new Vector3(0.05f, 0.05f, 0.05f));
             shader.SetVector3($"pointLights[{1}].diffuse", new Vector3(0.8f, 0.8f, 0.8f));
             shader.SetVector3($"pointLights[{1}].specular", new Vector3(1.0f, 1.0f, 1.0f));
             shader.SetFloat($"pointLights[{1}].constant", 1.0f);
             shader.SetFloat($"pointLights[{1}].linear", 0.0045f);
             shader.SetFloat($"pointLights[{1}].quadratic", 0.000075f);
+            shader.SetInt($"pointLights[{1}].visible", isMoonVisible ? 1 : 0);
 
             //// Spot light
             //shader.SetVector3("spotLight.position", camera.Position);
