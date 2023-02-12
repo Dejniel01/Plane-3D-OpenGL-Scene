@@ -5,7 +5,7 @@ namespace MovementOrchestratorLib
 {
     public class PlaneMovementOrchestrator
     {
-        private PlaneMovementState currentState = PlaneMovementState.GoingStraight;
+        private PlaneMovementState currentState = PlaneMovementState.TurningRight;
         private Random rand = new Random();
         private bool first = true;
 

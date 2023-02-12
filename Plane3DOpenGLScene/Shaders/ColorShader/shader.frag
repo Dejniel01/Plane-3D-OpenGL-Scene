@@ -32,7 +32,7 @@ struct SpotLight{
     float quadratic;
 };
 
-#define NR_SPOT_LIGHTS 1
+#define NR_SPOT_LIGHTS 2
 uniform SpotLight spotLights[NR_SPOT_LIGHTS];
 
 out vec4 FragColor;
@@ -58,7 +58,7 @@ void main()
     for(int i = 0; i < NR_POINT_LIGHTS; i++)
         result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
 
-    for(int i = 1; i < NR_SPOT_LIGHTS; i++)
+    for(int i = 0; i < NR_SPOT_LIGHTS; i++)
         result += CalcSpotLight(spotLights[i], norm, FragPos, viewDir);    
 
     float fogMax = 50;
