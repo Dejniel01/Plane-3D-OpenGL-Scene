@@ -1,4 +1,5 @@
-﻿using OpenTK.Mathematics;
+﻿using OpenTK.Graphics.OpenGL;
+using OpenTK.Mathematics;
 using Plane3DOpenGLScene.Structures;
 using System;
 using System.Collections.Generic;
@@ -10,11 +11,12 @@ namespace MovementOrchestratorLib
 {
     internal abstract class PlaneMovement
     {
-        public Func<SceneObject, Vector3, bool> NextCondition { get; set; }
-        public PlaneMovement Next { get; set; }
+        public Func<SceneObject, Vector3, bool> NextCondition { get; set; } = (plane, planeDirection) => false;
+        public PlaneMovement? Next { get; set; }
 
-        public virtual PlaneMovement Move(SceneObject plane, ref Vector3 planeDirection, float deltaTime)
+        public virtual PlaneMovement? Move(SceneObject plane, ref Vector3 planeDirection, float deltaTime)
         {
+            plane.Position += planeDirection * deltaTime;
             if (NextCondition(plane, planeDirection))
                 return Next;
             return this;
@@ -23,10 +25,10 @@ namespace MovementOrchestratorLib
 
     internal class GoingStraight : PlaneMovement
     {
-        private Random rand = new Random();
+        private readonly Random rand = new();
         public override PlaneMovement Move(SceneObject plane, ref Vector3 planeDirection, float deltaTime)
         {
-            plane.Rotation += new Vector3((float)rand.NextDouble() * 10 * deltaTime - 5 * deltaTime, 0, 0);
+            plane.Rotation += new Vector3((float)rand.NextDouble() * 2 * deltaTime - deltaTime, 0, 0);
 
             if (Math.Abs(plane.Rotation.X) > Math.PI / 30)
                 plane.Rotation = new Vector3(Math.Sign(plane.Rotation.X) * (float)Math.PI / 30, plane.Rotation.Y, plane.Rotation.Z);
@@ -80,4 +82,5 @@ namespace MovementOrchestratorLib
             return base.Move(plane, ref planeDirection, deltaTime);
         }
     }
+
 }

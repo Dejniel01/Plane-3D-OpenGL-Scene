@@ -9,7 +9,6 @@ namespace Plane3D.Plane3DOpenGLScene
     {
         private static void Main()
         {
-            //var test = SceneObjectFactory.CreatePlaneObject();
             var nativeWindowSettings = new NativeWindowSettings()
             {
                 Size = new Vector2i(800, 600),

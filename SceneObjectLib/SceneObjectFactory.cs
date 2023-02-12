@@ -8,7 +8,6 @@ namespace Plane3DOpenGLScene.Structures
 
         public static SceneObject CreatePlaneObject()
         {
-            //string planeObj = "./../../../../../Assets/Airplane_v1_L1.123c4a6fedec-1680-4a36-a228-b0d440a4f280/Airplane_v1_L1.123c4a6fedec-1680-4a36-a228-b0d440a4f280/11803_Airplane_v1_l1.obj";
             string planeObj = "./../../../../../Assets/caravanazip/source/42cc9aa7d22b4afa917d6f84e6c5642f/single.obj";
 
             return CreateModelFromFile(planeObj);

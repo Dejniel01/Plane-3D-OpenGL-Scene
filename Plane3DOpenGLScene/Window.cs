@@ -13,11 +13,11 @@ namespace Plane3D.Plane3DOpenGLScene
 {
     internal class Window : GameWindow
     {
-        //private readonly float[] vertices;
+        #region Private fields
+
+        #region Scene objects fields
 
         private readonly SceneObject plane;
-
-        //private int _elementBufferObject;
 
         private int planeVertexBufferObject;
 
@@ -61,21 +61,23 @@ namespace Plane3D.Plane3DOpenGLScene
 
         private Texture oceanTexture;
 
-        // The view and projection matrices have been removed as we don't need them here anymore.
-        // They can now be found in the new camera class.
+        #endregion
 
-        // We need an instance of the new camera class so it can manage the view and projection matrix code.
-        // We also need a boolean set to true to detect whether or not the mouse has been moved for the first time.
-        // Finally, we add the last position of the mouse so we can calculate the mouse offset easily.
+        #region Camera fields
+
         private Camera activeCamera;
 
-        private Camera[] cameras;
+        private readonly Camera[] cameras;
 
         private bool isFirstMove = true;
 
         private Vector2 lastPos;
 
-        private float[] cloudScales = new float[]
+        #endregion
+
+        #region Layout arrays
+
+        private readonly float[] cloudScales = new float[]
         {
             0.01f,
             0.015f,
@@ -86,68 +88,99 @@ namespace Plane3D.Plane3DOpenGLScene
             0.011f,
             0.02f,
             0.01f,
-            0.013f
+            0.013f,
+            0.01f,
+            0.015f,
+            0.01f,
+            0.005f,
+            0.013f,
+            0.015f,
+            0.011f,
+            0.02f,
+            0.01f,
+            0.013f,
+            0.01f,
+            0.015f,
+            0.01f,
+            0.005f,
+            0.013f,
+            0.015f,
+            0.011f,
+            0.02f,
+            0.01f,
+            0.013f,
         };
 
-        private Vector3[] cloudPos = new Vector3[]
+        private readonly Vector3[] cloudPos = new Vector3[]
         {
             new Vector3(-10, -10, -10),
-            new Vector3(-10, 0, -5),
+            new Vector3(-1.5f, 2, 17),
             new Vector3(-10, -10, -10),
-            new Vector3(-10, 10, -10),
+            new Vector3(-20, 2, 4),
             new Vector3(3, -10, 2),
             new Vector3(5, -10, -10),
             new Vector3(-10, -10, -10),
             new Vector3(-10, 4, -10),
             new Vector3(10, -10, 5),
             new Vector3(10, 10, 5),
+            new Vector3(16, -10, 27),
+            new Vector3(17, 2, 27),
+            new Vector3(18, -10, 29),
+            new Vector3(19, 2, 30),
+            new Vector3(20, -10, -28),
+            new Vector3(16, -10, -20),
+            new Vector3(17, -10, -25),
+            new Vector3(18, 4, -19),
+            new Vector3(19, -10, -28),
+            new Vector3(20, 10, 27),
+            new Vector3(-24, -10, 30),
+            new Vector3(-25, 2, 28),
+            new Vector3(-26, -10, 32),
+            new Vector3(-27, 2, 27),
+            new Vector3(-28, -10, 29),
+            new Vector3(-24, -10, -20),
+            new Vector3(-25, -10, -30),
+            new Vector3(-26, 4, -25),
+            new Vector3(-27, -10, -22),
+            new Vector3(-28, 10, -29),
         };
 
-        private float[] ringScales = new float[]
+        private readonly Vector3[] ringPos = new Vector3[]
         {
-            1.5f,
-            1.5f,
-            1.5f,
-            1.5f,
-            //0.01f,
-            //0.015f,
-            //0.01f,
-            //0.005f
-        };
-
-        private Vector3[] ringPos = new Vector3[]
-        {
-            new Vector3(-5, -20, -10),
+            new Vector3(-14.85f, 0, 0),
             new Vector3(0, 0, 0),
-            new Vector3(0, 5, -10),
-            new Vector3(-10, 10, -10),
+            new Vector3(-7.76f, 0, 9.31f),
+            new Vector3(0, 0, -10),
         };
 
-        private Vector3[] ringRotations = new Vector3[]
+        private readonly Vector3[] ringRotations = new Vector3[]
         {
-            new Vector3((float)Math.PI/2, 0, 0),
-            new Vector3(0, 0, (float)Math.PI/2),
-            new Vector3((float)Math.PI/2, 0, 0),
-            new Vector3(0, 0, (float)Math.PI/2),
+            new Vector3(MathHelper.DegreesToRadians(90), 0, 0),
+            new Vector3(0, 0, MathHelper.DegreesToRadians(90)),
+            new Vector3(MathHelper.DegreesToRadians(90), MathHelper.DegreesToRadians(45), 0),
+            new Vector3(0, 0, MathHelper.DegreesToRadians(90)),
         };
 
-        private Vector3 planeDirection = new Vector3(-1, 0, 0);
+        #endregion
 
-        private PlaneMovementOrchestrator planeMovementOrchestrator = new PlaneMovementOrchestrator();
+        private Vector3 planeDirection = new(-1, 0, 0);
 
+        private readonly PlaneMovementOrchestrator planeMovementOrchestrator = new();
+
+        private float angle = 0;
         private bool isSunVisible = true;
         private bool isMoonVisible = false;
 
-        private Vector3 spotlightsOffset = Vector3.Zero;
+        private float spotlightsOffsetHorizontal = 0;
+        private float spotlightsOffsetVertical = 0;
 
-        //private double time;
+        #endregion
+
         public Window(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
             : base(gameWindowSettings, nativeWindowSettings)
         {
             plane = SceneObjectFactory.CreatePlaneObject();
             plane.Scale = 0.25f;
-            //plane.Position = new(10, 10, 10);
-            //plane.Rotation = new Vector3(0, (float)Math.PI / 2, 0);
 
             clouds = new SceneObject[]
             {
@@ -160,7 +193,27 @@ namespace Plane3D.Plane3DOpenGLScene
                 SceneObjectFactory.CreateCloudObject(),
                 SceneObjectFactory.CreateCloudObject(),
                 SceneObjectFactory.CreateCloudObject(),
-                SceneObjectFactory.CreateCloudObject()
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
+                SceneObjectFactory.CreateCloudObject(),
             };
 
             for (int i = 0; i < clouds.Length; i++)
@@ -168,12 +221,6 @@ namespace Plane3D.Plane3DOpenGLScene
                 clouds[i].Scale = cloudScales[i];
                 clouds[i].Position = cloudPos[i];
             }
-
-            //clouds[0].Position = (new Vector4(0, 0, -4, 1) * plane.ModelMatrix).Xyz;
-            //clouds[1].Position = (new Vector4(0, 0, 4, 1) * plane.ModelMatrix).Xyz;
-            //clouds[0].Scale = 0.0002f;
-            //clouds[1].Scale = 0.0002f;
-
 
             mainLights = new SceneObject[]
             {
@@ -196,7 +243,7 @@ namespace Plane3D.Plane3DOpenGLScene
 
             for (int i = 0; i < rings.Length; i++)
             {
-                rings[i].Scale = ringScales[i];
+                rings[i].Scale = 1.5f;
                 rings[i].Position = ringPos[i];
                 rings[i].Rotation = ringRotations[i];
             }
@@ -204,6 +251,15 @@ namespace Plane3D.Plane3DOpenGLScene
             ocean = SceneObjectFactory.CreateOceanObject();
             ocean.Position = new Vector3(0, -20, 0);
             ocean.Scale = 2;
+
+            cameras = new Camera[]
+            {
+                new Camera(new Vector3(-15, 15, 15), Size.X / (float)Size.Y, new Vector3(0)),
+                new Camera(new Vector3(-15, 15, 15), Size.X / (float)Size.Y, new Vector3(0)),
+                new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y),
+                new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y),
+            };
+            activeCamera = cameras[0];
         }
 
         protected override void OnLoad()
@@ -223,22 +279,9 @@ namespace Plane3D.Plane3DOpenGLScene
             SetupRings();
 
             SetupOcean();
-
-
-            cameras = new Camera[]
-            {
-                new Camera(new Vector3(-10, 20, 10), Size.X / (float)Size.Y, new Vector3(0)),
-                new Camera(new Vector3(-10, 20, 10), Size.X / (float)Size.Y, new Vector3(0)),
-                new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y),
-                new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y),
-            };
-            // We initialize the camera so that it is 3 units back from where the rectangle is.
-            // We also give it the proper aspect ratio.
-            activeCamera = cameras[3];
-
-            // We make the mouse cursor invisible and captured so we can have proper FPS-camera movement.
-            CursorState = CursorState.Grabbed;
         }
+
+        #region OnLoad methods
 
         private void SetupPlane()
         {
@@ -359,6 +402,8 @@ namespace Plane3D.Plane3DOpenGLScene
             GL.VertexAttribPointer(ringNormalLocation, 3, VertexAttribPointerType.Float, false, rings[0].Model.Stride * sizeof(float), 3 * sizeof(float));
         }
 
+        #endregion
+
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
@@ -395,6 +440,8 @@ namespace Plane3D.Plane3DOpenGLScene
 
             SwapBuffers();
         }
+
+        #region OnRenderFrame methods
 
         private void DrawPlane()
         {
@@ -441,60 +488,6 @@ namespace Plane3D.Plane3DOpenGLScene
             }
         }
 
-        private void FillShaderArguments(Shader shader, Vector3? objectColor = null)
-        {
-            shader.SetMatrix4("view", activeCamera.GetViewMatrix());
-            shader.SetMatrix4("projection", activeCamera.GetProjectionMatrix());
-
-            shader.SetVector3("viewPos", activeCamera.Position);
-
-            // Point lights
-            shader.SetVector3($"pointLights[0].position", new Vector3(new Vector4(mainLights[0].Position, 1) * Matrix4.CreateRotationZ(angle / 10)));
-            shader.SetVector3($"pointLights[0].ambient", new Vector3(0.05f, 0.05f, 0.05f));
-            shader.SetVector3($"pointLights[0].diffuse", new Vector3(0.8f, 0.8f, 0.8f));
-            shader.SetVector3($"pointLights[0].specular", new Vector3(1.0f, 1.0f, 1.0f));
-            shader.SetFloat($"pointLights[0].constant", 1.0f);
-            shader.SetFloat($"pointLights[0].linear", 0.0014f);
-            shader.SetFloat($"pointLights[0].quadratic", 0.000007f);
-            shader.SetInt($"pointLights[0].visible", isSunVisible ? 1 : 0);
-
-            shader.SetVector3($"pointLights[1].position", new Vector3(new Vector4(mainLights[1].Position, 1) * Matrix4.CreateRotationZ(angle / 10)));
-            shader.SetVector3($"pointLights[1].ambient", new Vector3(0.05f, 0.05f, 0.05f));
-            shader.SetVector3($"pointLights[1].diffuse", new Vector3(0.8f, 0.8f, 0.8f));
-            shader.SetVector3($"pointLights[1].specular", new Vector3(1.0f, 1.0f, 1.0f));
-            shader.SetFloat($"pointLights[1].constant", 1.0f);
-            shader.SetFloat($"pointLights[1].linear", 0.0045f);
-            shader.SetFloat($"pointLights[1].quadratic", 0.000075f);
-            shader.SetInt($"pointLights[1].visible", isMoonVisible ? 1 : 0);
-
-            // Spot light
-            shader.SetVector3("spotLights[0].position", (new Vector4(0, 0, 4, 1) * plane.ModelMatrix).Xyz);
-            shader.SetVector3("spotLights[0].direction", planeDirection + spotlightsOffset);
-            shader.SetVector3("spotLights[0].ambient", new Vector3(0.0f, 0.0f, 0.0f));
-            shader.SetVector3("spotLights[0].diffuse", new Vector3(1.0f, 1.0f, 1.0f));
-            shader.SetVector3("spotLights[0].specular", new Vector3(1.0f, 1.0f, 1.0f));
-            shader.SetFloat("spotLights[0].constant", 1.0f);
-            shader.SetFloat("spotLights[0].linear", 0.09f);
-            shader.SetFloat("spotLights[0].quadratic", 0.032f);
-            shader.SetFloat("spotLights[0].cutOff", MathF.Cos(MathHelper.DegreesToRadians(12.5f)));
-            shader.SetFloat("spotLights[0].outerCutOff", MathF.Cos(MathHelper.DegreesToRadians(17.5f)));
-
-            shader.SetVector3("spotLights[1].position", (new Vector4(0, 0, -4, 1) * plane.ModelMatrix).Xyz);
-            shader.SetVector3("spotLights[1].direction", planeDirection + new Vector3(spotlightsOffset.X, spotlightsOffset.Y, -spotlightsOffset.Z));
-            shader.SetVector3("spotLights[1].ambient", new Vector3(0.0f, 0.0f, 0.0f));
-            shader.SetVector3("spotLights[1].diffuse", new Vector3(1.0f, 1.0f, 1.0f));
-            shader.SetVector3("spotLights[1].specular", new Vector3(1.0f, 1.0f, 1.0f));
-            shader.SetFloat("spotLights[1].constant", 1.0f);
-            shader.SetFloat("spotLights[1].linear", 0.09f);
-            shader.SetFloat("spotLights[1].quadratic", 0.032f);
-            shader.SetFloat("spotLights[1].cutOff", MathF.Cos(MathHelper.DegreesToRadians(12.5f)));
-            shader.SetFloat("spotLights[1].outerCutOff", MathF.Cos(MathHelper.DegreesToRadians(17.5f)));
-
-            if (objectColor != null)
-                shader.SetVector3("objectColor", objectColor.Value);
-        }
-
-        float angle = 0.0f;
         private void DrawMainLights()
         {
             GL.BindVertexArray(mainLightVertexArrayObject);
@@ -527,6 +520,59 @@ namespace Plane3D.Plane3DOpenGLScene
             }
         }
 
+        private void FillShaderArguments(Shader shader, Vector3? objectColor = null)
+        {
+            shader.SetMatrix4("view", activeCamera.GetViewMatrix());
+            shader.SetMatrix4("projection", activeCamera.GetProjectionMatrix());
+
+            shader.SetVector3("viewPos", activeCamera.Position);
+
+            shader.SetVector3($"pointLights[0].position", new Vector3(new Vector4(mainLights[0].Position, 1) * Matrix4.CreateRotationZ(angle / 10)));
+            shader.SetVector3($"pointLights[0].ambient", new Vector3(0.05f, 0.05f, 0.05f));
+            shader.SetVector3($"pointLights[0].diffuse", new Vector3(0.8f, 0.8f, 0.8f));
+            shader.SetVector3($"pointLights[0].specular", new Vector3(1.0f, 1.0f, 1.0f));
+            shader.SetFloat($"pointLights[0].constant", 1.0f);
+            shader.SetFloat($"pointLights[0].linear", 0.0014f);
+            shader.SetFloat($"pointLights[0].quadratic", 0.000007f);
+            shader.SetInt($"pointLights[0].visible", isSunVisible ? 1 : 0);
+
+            shader.SetVector3($"pointLights[1].position", new Vector3(new Vector4(mainLights[1].Position, 1) * Matrix4.CreateRotationZ(angle / 10)));
+            shader.SetVector3($"pointLights[1].ambient", new Vector3(0.05f, 0.05f, 0.05f));
+            shader.SetVector3($"pointLights[1].diffuse", new Vector3(0.8f, 0.8f, 0.8f));
+            shader.SetVector3($"pointLights[1].specular", new Vector3(1.0f, 1.0f, 1.0f));
+            shader.SetFloat($"pointLights[1].constant", 1.0f);
+            shader.SetFloat($"pointLights[1].linear", 0.0045f);
+            shader.SetFloat($"pointLights[1].quadratic", 0.000075f);
+            shader.SetInt($"pointLights[1].visible", isMoonVisible ? 1 : 0);
+
+            shader.SetVector3("spotLights[0].position", (new Vector4(0, 0, 4, 1) * plane.ModelMatrix).Xyz);
+            shader.SetVector3("spotLights[0].direction", planeDirection + Vector3.Normalize(Vector3.Cross(planeDirection, Vector3.UnitY)) * spotlightsOffsetHorizontal + Vector3.UnitY * spotlightsOffsetVertical);
+            shader.SetVector3("spotLights[0].ambient", new Vector3(0.0f, 0.0f, 0.0f));
+            shader.SetVector3("spotLights[0].diffuse", new Vector3(1.0f, 1.0f, 1.0f));
+            shader.SetVector3("spotLights[0].specular", new Vector3(1.0f, 1.0f, 1.0f));
+            shader.SetFloat("spotLights[0].constant", 1.0f);
+            shader.SetFloat("spotLights[0].linear", 0.09f);
+            shader.SetFloat("spotLights[0].quadratic", 0.032f);
+            shader.SetFloat("spotLights[0].cutOff", MathF.Cos(MathHelper.DegreesToRadians(12.5f)));
+            shader.SetFloat("spotLights[0].outerCutOff", MathF.Cos(MathHelper.DegreesToRadians(17.5f)));
+
+            shader.SetVector3("spotLights[1].position", (new Vector4(0, 0, -4, 1) * plane.ModelMatrix).Xyz);
+            shader.SetVector3("spotLights[1].direction", planeDirection - Vector3.Normalize(Vector3.Cross(planeDirection, Vector3.UnitY)) * spotlightsOffsetHorizontal + Vector3.UnitY * spotlightsOffsetVertical);
+            shader.SetVector3("spotLights[1].ambient", new Vector3(0.0f, 0.0f, 0.0f));
+            shader.SetVector3("spotLights[1].diffuse", new Vector3(1.0f, 1.0f, 1.0f));
+            shader.SetVector3("spotLights[1].specular", new Vector3(1.0f, 1.0f, 1.0f));
+            shader.SetFloat("spotLights[1].constant", 1.0f);
+            shader.SetFloat("spotLights[1].linear", 0.09f);
+            shader.SetFloat("spotLights[1].quadratic", 0.032f);
+            shader.SetFloat("spotLights[1].cutOff", MathF.Cos(MathHelper.DegreesToRadians(12.5f)));
+            shader.SetFloat("spotLights[1].outerCutOff", MathF.Cos(MathHelper.DegreesToRadians(17.5f)));
+
+            if (objectColor != null)
+                shader.SetVector3("objectColor", objectColor.Value);
+        }
+
+        #endregion
+
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             base.OnUpdateFrame(e);
@@ -548,76 +594,84 @@ namespace Plane3D.Plane3DOpenGLScene
 
             if (input.IsKeyDown(Keys.Up))
             {
-                spotlightsOffset += Vector3.UnitY * cameraSpeed * (float)e.Time;
+                spotlightsOffsetVertical += cameraSpeed * (float)e.Time;
             }
             if (input.IsKeyDown(Keys.Down))
             {
-                spotlightsOffset -= Vector3.UnitY * cameraSpeed * (float)e.Time;
+                spotlightsOffsetVertical -= cameraSpeed * (float)e.Time;
             }
             if (input.IsKeyDown(Keys.Left))
             {
-                spotlightsOffset += Vector3.UnitZ * cameraSpeed * (float)e.Time;
+                spotlightsOffsetHorizontal -= cameraSpeed * (float)e.Time;
             }
             if (input.IsKeyDown(Keys.Right))
             {
-                spotlightsOffset -= Vector3.UnitZ * cameraSpeed * (float)e.Time;
+                spotlightsOffsetHorizontal += cameraSpeed * (float)e.Time;
             }
-            if (input.IsKeyDown(Keys.W))
+
+            if (activeCamera == cameras[3])
             {
-                cameras[3].Position += cameras[3].Front * cameraSpeed * (float)e.Time; // Forward
+                if (input.IsKeyDown(Keys.W))
+                {
+                    cameras[3].Position += cameras[3].Front * cameraSpeed * (float)e.Time;
+                }
+                if (input.IsKeyDown(Keys.S))
+                {
+                    cameras[3].Position -= cameras[3].Front * cameraSpeed * (float)e.Time;
+                }
+                if (input.IsKeyDown(Keys.A))
+                {
+                    cameras[3].Position -= cameras[3].Right * cameraSpeed * (float)e.Time;
+                }
+                if (input.IsKeyDown(Keys.D))
+                {
+                    cameras[3].Position += cameras[3].Right * cameraSpeed * (float)e.Time;
+                }
+                if (input.IsKeyDown(Keys.Space))
+                {
+                    cameras[3].Position += cameras[3].Up * cameraSpeed * (float)e.Time;
+                }
+                if (input.IsKeyDown(Keys.LeftShift))
+                {
+                    cameras[3].Position -= cameras[3].Up * cameraSpeed * (float)e.Time;
+                }
+
+                var mouse = MouseState;
+                if (isFirstMove)
+                {
+                    lastPos = new Vector2(mouse.X, mouse.Y);
+                    isFirstMove = false;
+                }
+                else
+                {
+                    var deltaX = mouse.X - lastPos.X;
+                    var deltaY = mouse.Y - lastPos.Y;
+                    lastPos = new Vector2(mouse.X, mouse.Y);
+
+                    cameras[3].Yaw += deltaX * sensitivity;
+                    cameras[3].Pitch -= deltaY * sensitivity;
+                }
             }
-            if (input.IsKeyDown(Keys.S))
-            {
-                cameras[3].Position -= cameras[3].Front * cameraSpeed * (float)e.Time; // Backwards
-            }
-            if (input.IsKeyDown(Keys.A))
-            {
-                cameras[3].Position -= cameras[3].Right * cameraSpeed * (float)e.Time; // Left
-            }
-            if (input.IsKeyDown(Keys.D))
-            {
-                cameras[3].Position += cameras[3].Right * cameraSpeed * (float)e.Time; // Right
-            }
-            if (input.IsKeyDown(Keys.Space))
-            {
-                cameras[3].Position += cameras[3].Up * cameraSpeed * (float)e.Time; // Up
-            }
-            if (input.IsKeyDown(Keys.LeftShift))
-            {
-                cameras[3].Position -= cameras[3].Up * cameraSpeed * (float)e.Time; // Down
-            }
+
             if (input.IsKeyDown(Keys.D1))
             {
                 activeCamera = cameras[0];
+                CursorState = CursorState.Normal;
             }
             if (input.IsKeyDown(Keys.D2))
             {
                 activeCamera = cameras[1];
+                CursorState = CursorState.Normal;
             }
             if (input.IsKeyDown(Keys.D3))
             {
                 activeCamera = cameras[2];
+                CursorState = CursorState.Normal;
             }
             if (input.IsKeyDown(Keys.D4))
             {
                 activeCamera = cameras[3];
-            }
-
-            var mouse = MouseState;
-
-            if (isFirstMove)
-            {
-                lastPos = new Vector2(mouse.X, mouse.Y);
-                isFirstMove = false;
-            }
-            else
-            {
-                var deltaX = mouse.X - lastPos.X;
-                var deltaY = mouse.Y - lastPos.Y;
-                lastPos = new Vector2(mouse.X, mouse.Y);
-
-                cameras[3].Yaw += deltaX * sensitivity;
-                cameras[3].Pitch -= deltaY * sensitivity;
+                CursorState = CursorState.Grabbed;
             }
         }
 
