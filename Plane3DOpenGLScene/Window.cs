@@ -7,6 +7,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Runtime.InteropServices;
 using MovementOrchestratorLib;
+using Assimp.Unmanaged;
 
 namespace Plane3D.Plane3DOpenGLScene
 {
@@ -34,7 +35,7 @@ namespace Plane3D.Plane3DOpenGLScene
 
         private Shader cloudShader;
 
-        private readonly SceneObject mainLight;
+        private readonly SceneObject[] mainLights;
 
         private int mainLightVertexBufferObject;
 
@@ -151,9 +152,16 @@ namespace Plane3D.Plane3DOpenGLScene
                 clouds[i].Position = cloudPos[i];
             }
 
-            mainLight = SceneObjectFactory.CreateSphereObject();
-            mainLight.Position = new Vector3(75, 0, 0);
-            mainLight.Scale = 5;
+            mainLights = new SceneObject[]
+            {
+                SceneObjectFactory.CreateSphereObject(),
+                SceneObjectFactory.CreateSphereObject()
+            };
+
+            mainLights[0].Position = new Vector3(75, 0, 0);
+            mainLights[1].Position = new Vector3(-75, 0, 0);
+            mainLights[0].Scale = 5;
+            mainLights[1].Scale = 2;
 
             rings = new SceneObject[]
             {
@@ -162,7 +170,6 @@ namespace Plane3D.Plane3DOpenGLScene
                 SceneObjectFactory.CreateRingObject(),
                 SceneObjectFactory.CreateRingObject(),
             };
-
 
             for (int i = 0; i < rings.Length; i++)
             {
@@ -184,7 +191,7 @@ namespace Plane3D.Plane3DOpenGLScene
 
             SetupClouds();
 
-            SetupMainLight();
+            SetupMainLights();
 
             SetupRings();
 
@@ -247,21 +254,21 @@ namespace Plane3D.Plane3DOpenGLScene
             GL.VertexAttribPointer(cloudNormalLocation, 3, VertexAttribPointerType.Float, false, clouds[0].Model.Stride * sizeof(float), 3 * sizeof(float));
         }
 
-        private void SetupMainLight()
+        private void SetupMainLights()
         {
             mainLightVertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(mainLightVertexArrayObject);
 
             mainLightVertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, mainLightVertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, mainLight.Model.Vertices.Length * sizeof(float), mainLight.Model.Vertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, mainLights[0].Model.Vertices.Length * sizeof(float), mainLights[0].Model.Vertices, BufferUsageHint.StaticDraw);
 
             mainLightShader = new Shader("Shaders/LightShader/shader.vert", "Shaders/LightShader/shader.frag");
             mainLightShader.Use();
 
             var mainLightVertexLocation = mainLightShader.GetAttribLocation("aPosition");
             GL.EnableVertexAttribArray(mainLightVertexLocation);
-            GL.VertexAttribPointer(mainLightVertexLocation, 3, VertexAttribPointerType.Float, false, mainLight.Model.Stride * sizeof(float), 0);
+            GL.VertexAttribPointer(mainLightVertexLocation, 3, VertexAttribPointerType.Float, false, mainLights[0].Model.Stride * sizeof(float), 0);
         }
 
         private void SetupRings()
@@ -295,7 +302,7 @@ namespace Plane3D.Plane3DOpenGLScene
 
             DrawClouds();
 
-            DrawMainLight();
+            DrawMainLights();
 
             DrawRings();
 
@@ -314,7 +321,7 @@ namespace Plane3D.Plane3DOpenGLScene
             planeShader.Use();
 
             planeShader.SetVector3("lightColor", new Vector3(1.0f, 1.0f, 1.0f));
-            planeShader.SetVector3("lightPos", new Vector3(new Vector4(mainLight.Position, 1) * Matrix4.CreateRotationZ(angle)));
+            planeShader.SetVector3("lightPos", new Vector3(new Vector4(mainLights[0].Position, 1) * Matrix4.CreateRotationZ(angle)));
             planeShader.SetVector3("viewPos", camera.Position);
 
             planeShader.SetMatrix4("model", plane.ModelMatrix);
@@ -330,14 +337,7 @@ namespace Plane3D.Plane3DOpenGLScene
             GL.BindVertexArray(cloudVertexArrayObject);
 
             cloudShader.Use();
-
-            cloudShader.SetVector3("objectColor", new Vector3(1.0f, 1.0f, 1.0f));
-            cloudShader.SetVector3("lightColor", new Vector3(1.0f, 1.0f, 1.0f));
-            cloudShader.SetVector3("lightPos", new Vector3(new Vector4(mainLight.Position, 1) * Matrix4.CreateRotationZ(angle)));
-            cloudShader.SetVector3("viewPos", camera.Position);
-
-            cloudShader.SetMatrix4("view", camera.GetViewMatrix());
-            cloudShader.SetMatrix4("projection", camera.GetProjectionMatrix());
+            FillShaderArguments(cloudShader, new Vector3(1.0f));
 
             foreach (var cloud in clouds)
             {
@@ -347,18 +347,60 @@ namespace Plane3D.Plane3DOpenGLScene
             }
         }
 
+        private void FillShaderArguments(Shader shader, Vector3 objectColor)
+        {
+            shader.SetMatrix4("view", camera.GetViewMatrix());
+            shader.SetMatrix4("projection", camera.GetProjectionMatrix());
+
+            shader.SetVector3("viewPos", camera.Position);
+
+            // Point lights
+            shader.SetVector3($"pointLights[{0}].position", new Vector3(new Vector4(mainLights[0].Position, 1) * Matrix4.CreateRotationZ(angle)));
+            shader.SetVector3($"pointLights[{0}].ambient", new Vector3(0.05f, 0.05f, 0.05f));
+            shader.SetVector3($"pointLights[{0}].diffuse", new Vector3(0.8f, 0.8f, 0.8f));
+            shader.SetVector3($"pointLights[{0}].specular", new Vector3(1.0f, 1.0f, 1.0f));
+            shader.SetFloat($"pointLights[{0}].constant", 1.0f);
+            shader.SetFloat($"pointLights[{0}].linear", 0.0014f);
+            shader.SetFloat($"pointLights[{0}].quadratic", 0.000007f);
+
+            shader.SetVector3($"pointLights[{1}].position", new Vector3(new Vector4(mainLights[1].Position, 1) * Matrix4.CreateRotationZ(angle)));
+            shader.SetVector3($"pointLights[{1}].ambient", new Vector3(0.05f, 0.05f, 0.05f));
+            shader.SetVector3($"pointLights[{1}].diffuse", new Vector3(0.8f, 0.8f, 0.8f));
+            shader.SetVector3($"pointLights[{1}].specular", new Vector3(1.0f, 1.0f, 1.0f));
+            shader.SetFloat($"pointLights[{1}].constant", 1.0f);
+            shader.SetFloat($"pointLights[{1}].linear", 0.0045f);
+            shader.SetFloat($"pointLights[{1}].quadratic", 0.000075f);
+
+            //// Spot light
+            //shader.SetVector3("spotLight.position", camera.Position);
+            //shader.SetVector3("spotLight.direction", camera.Front);
+            //shader.SetVector3("spotLight.ambient", new Vector3(0.0f, 0.0f, 0.0f));
+            //shader.SetVector3("spotLight.diffuse", new Vector3(1.0f, 1.0f, 1.0f));
+            //shader.SetVector3("spotLight.specular", new Vector3(1.0f, 1.0f, 1.0f));
+            //shader.SetFloat("spotLight.constant", 1.0f);
+            //shader.SetFloat("spotLight.linear", 0.09f);
+            //shader.SetFloat("spotLight.quadratic", 0.032f);
+            //shader.SetFloat("spotLight.cutOff", MathF.Cos(MathHelper.DegreesToRadians(12.5f)));
+            //shader.SetFloat("spotLight.outerCutOff", MathF.Cos(MathHelper.DegreesToRadians(17.5f)));
+
+            shader.SetVector3("objectColor", objectColor);
+        }
+
         float angle = 0.0f;
-        private void DrawMainLight()
+        private void DrawMainLights()
         {
             GL.BindVertexArray(mainLightVertexArrayObject);
 
             mainLightShader.Use();
 
-            mainLightShader.SetMatrix4("model", mainLight.ModelMatrix * Matrix4.CreateRotationZ(angle));
             mainLightShader.SetMatrix4("view", camera.GetViewMatrix());
             mainLightShader.SetMatrix4("projection", camera.GetProjectionMatrix());
 
-            GL.DrawArrays(PrimitiveType.Triangles, 0, mainLight.Model.Vertices.Length / mainLight.Model.Stride);
+            foreach (var light in mainLights)
+            {
+                mainLightShader.SetMatrix4("model", light.ModelMatrix * Matrix4.CreateRotationZ(angle / 10));
+                GL.DrawArrays(PrimitiveType.Triangles, 0, light.Model.Vertices.Length / light.Model.Stride);
+            }
         }
 
         private void DrawRings()
@@ -367,13 +409,7 @@ namespace Plane3D.Plane3DOpenGLScene
 
             ringShader.Use();
 
-            ringShader.SetVector3("objectColor", new Vector3(0.2f, 1.0f, 0.2f));
-            ringShader.SetVector3("lightColor", new Vector3(1.0f, 1.0f, 1.0f));
-            ringShader.SetVector3("lightPos", new Vector3(new Vector4(mainLight.Position, 1) * Matrix4.CreateRotationZ(angle)));
-            ringShader.SetVector3("viewPos", camera.Position);
-
-            ringShader.SetMatrix4("view", camera.GetViewMatrix());
-            ringShader.SetMatrix4("projection", camera.GetProjectionMatrix());
+            FillShaderArguments(ringShader, new Vector3(0.2f, 1.0f, 0.2f));
 
             foreach (var ring in rings)
             {
